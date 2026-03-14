@@ -1,0 +1,4 @@
+Active
+Driving
+Inactive
+Walking

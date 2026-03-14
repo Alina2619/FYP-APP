@@ -1,0 +1,92 @@
+{
+  "expo": {
+    "name": "DriveMate",
+    "slug": "DriveMate",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow DriveMate to use your location for trip tracking and safety features.",
+          "locationAlwaysPermission": "Allow DriveMate to use your location even when the app is in the background.",
+          "locationWhenInUsePermission": "Allow DriveMate to use your location while using the app.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow DriveMate to access your microphone for voice commands.",
+          "speechRecognitionPermission": "Allow DriveMate to use speech recognition for voice commands."
+        }
+      ],
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "Allow DriveMate to access motion sensors for activity recognition."
+        }
+      ]
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Allow DriveMate to use your location for trip tracking and safety features.",
+        "NSLocationWhenInUseUsageDescription": "Allow DriveMate to use your location while using the app.",
+        "NSMicrophoneUsageDescription": "Allow DriveMate to access your microphone for voice commands.",
+        "NSSpeechRecognitionUsageDescription": "Allow DriveMate to use speech recognition for voice commands.",
+        "NSMotionUsageDescription": "Allow DriveMate to access motion sensors for activity recognition."
+      },
+      "bundleIdentifier": "com.anonymous.DriveMate",
+      "config": {
+        "googleMapsApiKey": "AIzaSyAGj7_dpm9qpK15QHKnFy-Fp8M4PUB8uqs"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.ACTIVITY_RECOGNITION",
+        "android.permission.BODY_SENSORS"
+      ],
+      "package": "com.anonymous.DriveMate",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBxMuNLhQqOGubc2dPZPqEqY7NGl8HMw_Q"
+        }
+      }
+    },
+    "androidStatusBar": {
+      "barStyle": "dark-content",
+      "backgroundColor": "#ffffff"
+    },
+    "extra": {
+      "assemblyAIKey": "3d80a65e278248e189642912a49be809",
+      "eas": {
+        "projectId": "c0901b3d-12cd-4225-96b4-9d14fbd43671"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/0d32e81a-0e91-44cb-9a9c-39ae128d40ce"
+    }
+  }
+}

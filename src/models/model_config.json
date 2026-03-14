@@ -1,0 +1,57 @@
+{
+  "window_size": 50,
+  "step_size": 5,
+  "feature_columns": [
+    "acc_x_axis",
+    "acc_y_axis",
+    "acc_z_axis",
+    "gyro_x_axis",
+    "gyro_y_axis",
+    "gyro_z_axis",
+    "magn_x_axis",
+    "magn_y_axis",
+    "magn_z_axis",
+    "gps_lat_increment",
+    "gps_long_increment",
+    "gps_alt_increment",
+    "gps_speed",
+    "gps_bearing",
+    "gps_accuracy"
+  ],
+  "feature_order": [
+    "acc_x_axis",
+    "acc_y_axis",
+    "acc_z_axis",
+    "gyro_x_axis",
+    "gyro_y_axis",
+    "gyro_z_axis",
+    "magn_x_axis",
+    "magn_y_axis",
+    "magn_z_axis",
+    "gps_lat_increment",
+    "gps_long_increment",
+    "gps_alt_increment",
+    "gps_speed",
+    "gps_bearing",
+    "gps_accuracy"
+  ],
+  "num_features": 15,
+  "input_shape": [
+    50,
+    15
+  ],
+  "output_classes": [
+    "Active",
+    "Driving",
+    "Inactive",
+    "Walking"
+  ],
+  "class_mapping": {
+    "0": "Active",
+    "1": "Driving",
+    "2": "Inactive",
+    "3": "Walking"
+  },
+  "model_type": "LSTM",
+  "description": "DriveMate Activity Recognition Model"
+}
