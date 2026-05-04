@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, LogBox } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, LogBox, Alert } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { TripProvider } from './contexts/TripContext';
 
-
 // ✅ Import Firebase services from your config
 import './firebaseConfig'; // This initializes Firebase ONCE
 import { auth } from './firebaseConfig';
 import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from './firebaseConfig';
 
 // Import your screens
 import SignUpScreen from './Screens/SignUpScreen';
@@ -84,10 +85,54 @@ const MainTabNavigator = () => {
   );
 };
 
+// Function to check account status
+const checkAccountStatus = async (user) => {
+  if (!user) return { allowed: true, status: null };
+  
+  try {
+    const userDoc = await getDoc(doc(db, 'users', user.uid));
+    if (userDoc.exists()) {
+      const userData = userDoc.data();
+      const accountStatus = userData.accountStatus;
+      const suspensionReason = userData.suspensionReason || 'No reason provided';
+      const deactivationReason = userData.deactivationReason || 'No reason provided';
+      
+      // Block if deactivated
+      if (accountStatus === 'deactivated') {
+        return { 
+          allowed: false, 
+          status: 'deactivated',
+          message: 'Your account has been deactivated. Please contact support for assistance.',
+          reason: deactivationReason
+        };
+      }
+      
+      // Block if suspended
+      if (accountStatus === 'suspended') {
+        return { 
+          allowed: false, 
+          status: 'suspended',
+          message: `Your account has been temporarily suspended.\n\nReason: ${suspensionReason}\n\nPlease contact support for more information.`,
+          reason: suspensionReason
+        };
+      }
+      
+      // Allow if active
+      return { allowed: true, status: 'active' };
+    }
+    return { allowed: true, status: null };
+  } catch (error) {
+    console.error('Error checking account status:', error);
+    return { allowed: true, status: null }; // Allow login on error
+  }
+};
+
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
+  const [initialRoute, setInitialRoute] = useState('welcome');
+  const [isCheckingStatus, setIsCheckingStatus] = useState(false);
 
   useEffect(() => {
     console.log('App: Setting up auth listener...');
@@ -96,17 +141,48 @@ export default function App() {
       console.log('Auth state changed, user:', user ? user.uid : 'null');
       
       if (user) {
-        // User is signed in (either by email or anonymous)
+        // User is signed in, check account status
         console.log('User authenticated:', user.uid, 'Email:', user.email || 'Anonymous');
-        setIsAuthenticated(true);
-        setAuthError(null);
+        
+        // Don't show loading indicator for status check on initial load
+        if (!isCheckingStatus) {
+          setIsCheckingStatus(true);
+        }
+        
+        const statusCheck = await checkAccountStatus(user);
+        
+        if (!statusCheck.allowed) {
+          // Account is deactivated or suspended - sign out and show alert
+          console.log(`Account ${statusCheck.status} for user ${user.uid}`);
+          await auth.signOut();
+          
+          // Show alert before resetting state
+          Alert.alert(
+            statusCheck.status === 'deactivated' ? 'Account Deactivated' : 'Account Suspended',
+            statusCheck.message,
+            [{ text: 'OK' }]
+          );
+          
+          setIsAuthenticated(false);
+          setInitialRoute('welcome');
+          setAuthError(null);
+        } else {
+          // Account is active, proceed
+          setIsAuthenticated(true);
+          setInitialRoute('MainTabs');
+          setAuthError(null);
+        }
+        
+        setIsCheckingStatus(false);
         setLoading(false);
       } else {
-        // No user is signed in - don't attempt anonymous sign-in
+        // No user is signed in
         console.log('No user signed in. User will need to log in.');
         setIsAuthenticated(false);
+        setInitialRoute('welcome');
         setAuthError(null);
         setLoading(false);
+        setIsCheckingStatus(false);
       }
     }, (error) => {
       console.error('Auth state listener error:', error);
@@ -114,12 +190,16 @@ export default function App() {
       // Handle specific auth errors
       if (error.code === 'auth/admin-restricted-operation') {
         console.log('Anonymous auth is disabled. This is expected behavior.');
-        setAuthError(null); // Not really an error, just anonymous auth is disabled
+        setAuthError(null);
         setIsAuthenticated(false);
+        setInitialRoute('welcome');
       } else {
         setAuthError(error.message);
+        setIsAuthenticated(false);
+        setInitialRoute('welcome');
       }
       setLoading(false);
+      setIsCheckingStatus(false);
     });
 
     return () => {
@@ -128,7 +208,7 @@ export default function App() {
     };
   }, []);
 
-  if (loading) {
+  if (loading || isCheckingStatus) {
     return (
       <View style={[styles.loadingContainer, styles.centerContent]}>
         <ActivityIndicator size="large" color="#4f46e5" />
@@ -147,9 +227,6 @@ export default function App() {
       </View>
     );
   }
-
-  // Determine initial route based on authentication
-  const initialRoute = isAuthenticated ? "MainTabs" : "welcome";
 
   return (
     <TripProvider>       
@@ -181,6 +258,7 @@ export default function App() {
           <Stack.Screen name="Analytics" component={Analytcis} />
           <Stack.Screen name="Emergency" component={DriveMateDashboard} />
           <Stack.Screen name="DriveModeScreen" component={DriveModeScreen} />
+          
           {/* Family Screens */}
           <Stack.Screen name="FamilyDetails" component={FamilySetupWizarda} />
           <Stack.Screen name="FamilyDashboard" component={FamilyDashboardScreen} />
